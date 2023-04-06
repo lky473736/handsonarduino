@@ -1,3 +1,5 @@
+// 4핀 초음파 센서를 시리얼 모니터에 
+
 void setup()
 {
   pinMode (9, OUTPUT);

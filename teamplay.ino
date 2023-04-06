@@ -36,7 +36,7 @@ int pushupstandard = 10;  // 거리 기준값 (단위: cm)
 
 int mode = 0;              // 현재 모드
 int count = 0;             // 운동 count
-int targetCount = 0;       // 목표 count
+int targetcount = 0;       // 목표 count
 bool counting = false;   // count 중인지 여부 (불리언 변수 사용)
 bool finished = false;   // 목표 count 달성 여부 (불리언 변수 사용)
 
@@ -54,9 +54,9 @@ void setup() {
     // 출력 잠깐만 대기하기
   }
   
-  targetCount = Serial.parseInt(); // int값으로 시리얼 입력받기
+  targetcount = Serial.parseInt(); // int값으로 시리얼 입력받기
   Serial.print("Target count: ");
-  Serial.println(targetCount);
+  Serial.println(targetcount);
 }
 
 void loop() {
@@ -112,7 +112,7 @@ void loop() {
     }
     
     // 목표 count 달성 여부 확인
-    if (count >= targetCount) 
+    if (count >= targetcount) 
     {
       finished = true;
       Serial.println("Well done!!");

@@ -77,7 +77,7 @@ void loop()
     digitalWrite(2,HIGH);
     delayMicroseconds(10);
     digitalWrite(2,LOW); // 센서 계속 쏨
-    long duration = pulseIn(3,HIGH);
+    long duration = pulseIn(3, HIGH);
     
     if (duration == 0)
     {
@@ -97,7 +97,7 @@ void loop()
       delay(300); // 센서에 계속 닿으면 개수 계속 올라가니깐 딜레이
     }
     
-    if (start == 1 && count >= 10)
+    if (start == 1 && count >= targetcount)
     {
       tone(12,659); // 성공하면 소리
       delay(2000);

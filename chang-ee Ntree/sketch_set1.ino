@@ -1,11 +1,45 @@
+/* 이제 해야하는거
+1) lcd 화면이 안뜨는 문제 해결 (아마도 화질 때문에 그런 것 같음)
+2) 서보모터가 돌아가지 않음 (조교님의 도움이 필요할 것 같다. 분명 코드는 올바름.)
+3) 도트매트릭스가 아무래도 조금 다른 라이브러리를 써야 할 것 같음
+(LedControl.h -> MD_MAX72xx.h & SPI.h)*/
+
+
+#include <LedControl.h>
+#include <Servo.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
-#include <Servo.h>
-#include <LedControl.h>
 
 LedControl Dote = LedControl(7, 6, 5, 1);
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+int trig = 3;
+int echo = 2;
+
+int ran = random(2);
+
+char op;    // 연산자를 저장할 변수
+float num1, num2;    // 입력받은 두 수와 결과를 저장할 변수
+
+Servo servo1;  // 서보 모터 1 객체
+Servo servo2;  // 서보 모터 2 객체
+
+int red = 8;
+int green = 9;
+
+int sda_d = A2; // dot matrix
+int scl_d = A3; // dot matrix
+
+long duration;
+int distance;
+int i;
+
+void notattention1(int time);
+void notattention2();
+void choumpa();
+int ac_calculator(int a, int b, char op);
+int fa_calculator();
 
 byte triangle[]={
   B00000000,
@@ -26,39 +60,8 @@ byte stick[]={
   B11111111,
   B00000000,
   B00000000,
-  B00000000,
+  B00000000
 };
-
-int trig = 3;
-int echo = 2;
-
-char input1;
-
-int a, b;
-
-Servo myservo1;  // 서보 모터 1 객체
-Servo myservo2;  // 서보 모터 2 객체
-int servo1 = 4;
-int servo2 = 5;
-
-int red = 8;
-int green = 9;
-
-int sda_d = A2; // dot matrix
-int scl_d = A3; // dot matrix
-
-long duration;
-int distance;
-int i;
-
-void notattention1(int time);
-void notattention2(int time);
-void choumpa();
-int ac_calculator(int a, int b, char op);
-int fa_calculator();
-
-void dotmatrix_tri();
-void dotmatrix_sti();
 
 void setup() {
   Serial.begin(9600);
@@ -71,66 +74,102 @@ void setup() {
   Dote.setIntensity(0, 7);                 
   Dote.clearDisplay(0);
 
-  Serial.print("Input maths symbols : ");
+  servo1.attach(4);
+  servo2.attach(5);
+}
 
+void loop()
+{
+  digitalWrite(3, LOW);
+  Serial.print("Enter an operator (+, -, *, /): ");
+  while (!Serial.available());   
+  op = Serial.read();    
+  Serial.println(op);    
 
+  Serial.print("Enter the first number: ");
+  while (!Serial.available());   
+  num1 = Serial.parseFloat();   
+  Serial.println(num1);   
 
-  input1 = Serial.read();
-  if (input1 == '+' || input1 == '-' || input1 == '*' || input1 == '/') {
-    if (Serial.available() >= 2) {
-      a = Serial.parseInt();
-      b = Serial.parseInt(); 
-    }                          
+  Serial.print("Enter the second number: ");
+  while (!Serial.available());   // 두 번째 숫자 입력 대기
+  num2 = Serial.parseFloat();    // 두 번째 숫자 입력받음
+  Serial.println(num2);    // 입력받은 두 번째 숫자 출력
+
+  for (int y = 0; y < 10; y++)
+  {
+    choumpa();
+    delay(1000);
+
+    if (distance < 50) {
+      break;
+    }
+
+    if (y == 9)
+    {
+        
+        notattention2();
+
+        delay (5000);
+        lcd.begin(16, 2);
+        int fake = fa_calculator();
+        lcd.print(fake);
+        Serial.println (fake);
+
+        for (int k = 0; k < 3; i++)
+        {
+          digitalWrite(red, HIGH);
+          delay(500);
+          digitalWrite(red, LOW);
+          delay(500);
+        }
+
+        while (true)
+        {
+          // 무한루프로 인해 프로그램 종료
+        }
+    }
+  }
+
+  delay (5000);
+  lcd.begin(16, 2);
+  int result = ac_calculator(num1, num2, op);
+  lcd.print(result);
+  Serial.println (result);
+
+  for (int k = 0; k < 3; i++)
+   {
+    digitalWrite(green, HIGH);
+    delay(500);
+    digitalWrite(green, LOW);
+    delay(500);
+  }
+
+  while (true)
+  {
+    // 무한루프로 인해 프로그램 종료
   }
 }
-
-void loop(){
-  choumpa();
-    if (distance < 100) {
-      delay (15000);
-
-      if (distance < 100) {
-        lcd.begin(16, 2);
-        int result = ac_calculator(a, b, input1);
-        lcd.print(result);
-        digitalWrite(green, HIGH);
-        delay(10000);
-        digitalWrite(green, LOW);
-      }
-
-      else {
-        fa_calculator();
-        digitalWrite(red, HIGH);
-        delay(10000);
-        digitalWrite(red, LOW);
-      }
-    }
-}
-
-
 
 void notattention1(int time) // time 만큼 잠자기
 {  
-  dotmatrix_sti();
+  showMatrix(stick, 1);
   delay(time);
 }
 
-void notattention2(int time) // time 만큼 춤추기
+void notattention2() 
 {  
-  myservo1.attach(servo1);
-  myservo2.attach(servo2);
-
-  for (int pos = 150; pos <= 210; pos += 1) {  // 150도부터 210도까지 회전
-    myservo1.write(pos);  // 서보 모터 회전 각도 설정
-    myservo2.write(pos);  // 서보 모터 회전 각도 설정
-    delay(15);  // 15밀리초 딜레이
-    dotmatrix_tri();
+  showMatrix(triangle, 1);
+  for (int angle = 0; angle <= 180; angle += 20) {
+    servo1.write(angle);
+    servo2.write(180 - angle);
+    delay(50);
   }
-  for (int pos = 210; pos >= 150; pos -= 1) {  // 210도부터 150도까지 회전
-    myservo1.write(pos);  // 서보 모터 회전 각도 설정
-    myservo2.write(pos);  // 서보 모터 회전 각도 설정
-    delay(15);  // 15밀리초 딜레이
-    dotmatrix_tri();
+  
+  for (int angle = 180; angle >= 0; angle -= 20) {
+    servo1.write(angle);
+    servo2.write(180 - angle);
+    delay(50);
   }
 }
 
@@ -144,9 +183,11 @@ void choumpa()
 
   // measure the duration of the echo pulse
   duration = pulseIn(echo, HIGH);
-
   // convert duration to distance
   distance = duration * 0.034 / 2;
+
+  Serial.print("distance : ");
+  Serial.println(distance);
 }
 
 int ac_calculator(int a, int b, char op)
@@ -171,21 +212,20 @@ int ac_calculator(int a, int b, char op)
 
 int fa_calculator()
 {
-  return random(100000);
+  return random();
 }
 
-void dotmatrix_tri()
+void showMatrix(byte arr[], int a)
 {
-  for (int i = 0; i < 8; i++) {
-    Dote.setRow(0, i, triangle[i]);
-    delay(150);  // 150밀리초 딜레이
-  }
-}
-
-void dotmatrix_sti()
-{
-  for (int i = 0; i < 8; i++) {
-    Dote.setRow(0, i, stick[i]);
-    delay(150);  // 150밀리초 딜레이
+  if (a == 1) {
+    for (int i = 0; i < 8; i++)
+    {
+      Dote.setRow(0, i, arr[i]);
+    }
+  } else {
+    for (int i = 0; i < 8; i++)
+    {
+      Dote.setRow(0, i, B00000000);
+    }
   }
 }

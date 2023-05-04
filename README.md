@@ -11,6 +11,6 @@ Hands on Programming - ntree (Arduino)
 
 This repository is source code set for reports that i studied at the lecture named 'Hands on Programming (Arduino)' in Gachon University Dept.Computer Engineering.
 
-In addition, there are also included activities of "Chang-ee N-tree's graduation filter creativity camp.
+In addition, there are also included activities of creativity camp named by 'Chang-ee N-tree'.
 
 lecture : Hands on Programming (Arduino) (MOOC / Thur / Professor Yang soon-ook), Chang-ee N-tree
